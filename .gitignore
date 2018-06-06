@@ -106,3 +106,4 @@ venv.bak/
 .idea/
 config.py
 restconf_netconf.py
+!/netconf_restconf.py
