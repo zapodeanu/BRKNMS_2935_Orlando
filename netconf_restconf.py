@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 
 
-# developed by Gabi Zapodeanu, TSA, Global Partner Organization
+# developed by Gabi Zapodeanu, TSA, GPO, Cisco Systems
 
 
 import requests
