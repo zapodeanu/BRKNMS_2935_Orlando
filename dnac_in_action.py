@@ -69,3 +69,4 @@ client_ip_add = '10.93.140.35'
 client_detail = get_client_info(client_ip_add, dnac_jwt_auth)
 print('The information for the client with the IP address: ', client_ip_add)
 pprint(client_detail)
+
