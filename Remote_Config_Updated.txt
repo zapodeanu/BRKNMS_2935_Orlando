@@ -6,7 +6,6 @@ interface Tunnel201
  ip address 10.93.140.46 255.255.255.252
  tunnel source Loopback200
  tunnel destination 10.93.140.48
- keepalive
 !
 !
 router eigrp 123
@@ -17,9 +16,9 @@ router eigrp 201
  redistribute static route-map REMOTE_ACCESS
  exit
 !
-ip route $IPD 255.255.255.255 Vlan$VlanId
+ip route 10.93.140.35 255.255.255.255 Vlan123
 !
-ip prefix-list REMOTE_ACCESS_PLIST seq 5 permit $IPD/32
+ip prefix-list REMOTE_ACCESS_PLIST seq 5 permit 10.93.140.35/32
 !
 route-map REMOTE_ACCESS permit 10
  match ip address prefix-list REMOTE_ACCESS_PLIST

@@ -4,13 +4,12 @@ no interface Loopback200
 no interface Tunnel201
 !
 router eigrp 123
-  no network 172.16.200.2 0.0.0.0
+  no network 10.93.140.49 0.0.0.0
 !
 no router eigrp 201
 !
-no ip route $RemoteClient 255.255.255.255 Vlan$VlanId
+no ip route $IPD 255.255.255.255 Vlan$VlanId
 !
 no ip prefix-list REMOTE_ACCESS_PLIST seq 5 permit $IPD/32
 !
 no route-map REMOTE_ACCESS permit 10
-
