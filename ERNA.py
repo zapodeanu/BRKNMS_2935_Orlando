@@ -25,6 +25,7 @@ import dnac_apis
 import asav_apis
 import config
 import netconf_restconf
+import service_now_apis
 
 from PIL import Image, ImageDraw, ImageFont  # for image processing
 from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
@@ -36,6 +37,7 @@ from config import GOOGLE_API_KEY
 from config import DNAC_URL, DNAC_USER, DNAC_PASS
 from config import ASAv_URL, ASAv_USER, ASAv_PASSW
 from config import UCSD_URL, UCSD_KEY
+from config import SNOW_URL, SNOW_ADMIN, SNOW_PASS
 
 DNAC_AUTH = HTTPBasicAuth(DNAC_USER, DNAC_PASS)
 ASAv_AUTH = HTTPBasicAuth(ASAv_USER, ASAv_PASSW)
@@ -68,7 +70,7 @@ def main():
     """
 
     last_person_email = 'gzapodea@cisco.com'
-    timer = 2
+    timer = 3600
 
     # save the initial stdout
     initial_sys = sys.stdout
@@ -146,7 +148,6 @@ def main():
                 last_message = 'Ready for input!'
 
         print('\nThe user with this email: ', last_person_email, ' asked access to IPD for ', (timer/60), ' minutes')
-
 
     # get the WJT Auth token to access DNA
     dnac_token = dnac_apis.get_dnac_jwt_token(DNAC_AUTH)
@@ -232,6 +233,7 @@ def main():
 
     print('\nDeployment of the configurations to the DC router, ', dc_device_hostname, ' started')
     log_dc_info += '\nDeployment of the configurations to the DC router, ' + dc_device_hostname + ' started'
+    log_dc_config = 'DC Router Config \n' + cli_config
 
     time.sleep(1)
 
@@ -267,6 +269,7 @@ def main():
     time.sleep(1)
 
     log_remote_info += '\nDeployment of the configurations to the Remote device, ' + remote_device_hostname + ' started'
+    log_remote_config = 'Remote Device Config \n' + cli_config
     print('\nDeployment of the configurations to the Remote device, ', remote_device_hostname, ' started')
 
     time.sleep(1)
@@ -305,13 +308,13 @@ def main():
 
     print('\nWait for DNA Center to complete the resync of the two devices')
 
-    time.sleep(240)
+    time.sleep(420)
 
     # start a path trace to check the path segmentation
     path_trace_id = dnac_apis.create_path_trace('172.16.202.1', IPD_IP, dnac_token)
 
     print('\nWait for Path Trace to complete')
-    time.sleep(20)
+    time.sleep(30)
 
     path_trace_info = dnac_apis.get_path_trace_info(path_trace_id, dnac_token)
 
@@ -324,7 +327,7 @@ def main():
     outside_acl_id = asav_apis.get_asav_access_list(OUTSIDE_INT)
     asav_status = asav_apis.create_asav_access_list(outside_acl_id, OUTSIDE_INT, VDI_IP, IPD_IP)
     if asav_status == 201:
-        log_asav_info = '\nASAv access list updated to allow traffic from ' + VDI_IP + ' to ' + VDI_IP + ' on the interface '+ OUTSIDE_INT
+        log_asav_info = '\nASAv access list updated to allow traffic from ' + VDI_IP + ' to ' + VDI_IP + ' on the interface ' + OUTSIDE_INT
     else:
         log_asav_info = '\nError updating the ASAv access list on the interface ' + OUTSIDE_INT
     print(log_asav_info)
@@ -343,6 +346,24 @@ def main():
 
     spark_apis.post_room_message(ROOM_NAME, 'Tropo Voice Notification: ' + voice_notification_result)
     log_access_info += '\nTropo Voice Notification: ' + voice_notification_result
+
+    # create and update ServiceNow incident
+
+    snow_user = 'ERNA'
+    snow_description = 'Vendor Remote Access - ERNA Automation'
+
+    snow_incident = service_now_apis.create_incident(snow_description, log_ipd_info, snow_user, '2')
+    service_now_apis.update_incident(snow_incident, log_ucsd_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_dc_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_dc_config, snow_user)
+    service_now_apis.update_incident(snow_incident, log_remote_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_remote_config, snow_user)
+    service_now_apis.update_incident(snow_incident, log_templ_depl_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_tunnel_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_path_trace, snow_user)
+    service_now_apis.update_incident(snow_incident, log_asav_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_access_info, snow_user)
+
 
     # time.sleep(timer)
     input('\nInput any key to continue ! ')
@@ -400,30 +421,36 @@ def main():
     outside_acl_id = asav_apis.get_asav_access_list(OUTSIDE_INT)
     asav_status = asav_apis.delete_asav_access_list(outside_acl_id, OUTSIDE_INT)
     if asav_status == 204:
-        asa_remove_log_info = '\nASAv access list on the interface ' + OUTSIDE_INT + ' restored to the baseline configuration'
+        log_asav_remove_info = '\nASAv access list on the interface ' + OUTSIDE_INT + ' restored to the baseline configuration'
     else:
-        asa_remove_log_info = 'Error while restoring the ASAv access list on the interface ' + OUTSIDE_INT
-    print(asa_remove_log_info)
+        log_asav_remove_info = 'Error while restoring the ASAv access list on the interface ' + OUTSIDE_INT
+    print(log_asav_remove_info)
 
-    # execute UCSD workflow to discoconnect VDI to VLAN, power on VDI
+    # execute UCSD workflow to disconnect VDI to VLAN, power on VDI
     # execute_ucsd_workflow(ucsd_key, UCSD_DISCONNECT_FLOW)
 
-    ucsd_remove_log_info = '\nUCSD disconnect flow executed'
-    print(ucsd_remove_log_info)
+    log_ucsd_remove_info = '\nUCSD disconnect flow executed'
+    print(log_ucsd_remove_info)
 
     # Spark notification
 
     spark_apis.post_room_message(ROOM_NAME, 'Access to this device: IPD has been terminated')
+    spark_apis.post_room_message(ROOM_NAME, '----------------------------------------------')
 
     # update the database with script execution
 
     access_log_file = open('access_logs.csv', 'a')
-    data_to_append = [date_time, last_person_email, IPD_IP, approver_email, log_dc_info, log_remote_info,
-                      log_templ_depl_info, log_tunnel_info, log_path_trace]
+    data_to_append = str('\n\n' + date_time) + ',' + last_person_email + ',' + log_ipd_info + ',' + approver_email
+    data_to_append += ',' + log_dc_info + ',' + log_remote_info + ',' + log_templ_depl_info + ','
+    data_to_append += log_path_trace + ',' + log_asav_info + ',\n' + snow_incident
     access_log_file.write(data_to_append)
     access_log_file.close()
 
     print('\nRecords database updated, file saved')
+
+    service_now_apis.update_incident(snow_incident, log_remove_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_asav_remove_info, snow_user)
+    service_now_apis.update_incident(snow_incident, log_ucsd_remove_info, snow_user)
 
     # restore the stdout to initial value
     sys.stdout = initial_sys
