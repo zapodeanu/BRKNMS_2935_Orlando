@@ -6,6 +6,7 @@ interface Tunnel201
  ip address 10.93.140.46 255.255.255.252
  tunnel source Loopback200
  tunnel destination 10.93.140.48
+ keepalive
 !
 !
 router eigrp 123

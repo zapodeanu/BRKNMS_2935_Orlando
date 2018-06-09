@@ -198,6 +198,7 @@ def main():
 
         print('\nApproval process completed')
 
+    approver_email = 'gabriel.zapodeanu@gmail.com'
     # get UCSD API key
     # ucsd_key = get_ucsd_api_key()
 
@@ -222,8 +223,8 @@ def main():
     # validation of dc router cli template
     dc_valid = dnac_apis.check_ipv4_duplicate(dc_config_file)
     log_dc_info = ''
-    if dc_valid is True:
-        print('\nDC Router CLI Templates validated')
+    if dc_valid is False:
+        print('\nDC Router CLI Template validated')
         log_dc_info = '\nDC Router CLI Templates validated'
 
     dnac_apis.upload_template(dc_config_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
@@ -257,8 +258,8 @@ def main():
     # validation of remote router cli template
     remote_valid = dnac_apis.check_ipv4_duplicate(remote_updated_config_file)
     log_remote_info = ''
-    if remote_valid is True:
-        log_remote_info = '\nRemote Device CLI Templates validated'
+    if remote_valid is False:
+        log_remote_info = '\nRemote Device CLI Template validated'
         print(log_remote_info)
 
     dnac_apis.upload_template(remote_config_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
@@ -330,7 +331,7 @@ def main():
 
     # Spark notification
 
-    spark_apis.post_room_message(ROOM_NAME, '\Requested access to this device: IPD, located in our office: ' +
+    spark_apis.post_room_message(ROOM_NAME, 'Requested access to this device: IPD, located in our office: ' +
                                  remote_device_location + ' by user ' + last_person_email + ' has been granted for '
                                  + str(int(timer / 60)) + ' minutes')
     log_access_info = '\nRequested access to this device: IPD, located in our office: '
@@ -369,7 +370,7 @@ def main():
     #  restore Remote router config
 
     remote_rem_file = 'Remote_Remove.txt'
-    remote_del_templ = remote_rem_file.split('.')[0]
+    remote_rem_templ = remote_rem_file.split('.')[0]
 
     cli_file = open(remote_rem_file, 'r')
     cli_config = cli_file.read()
@@ -386,7 +387,8 @@ def main():
     updated_cli_file.write(cli_config)
     updated_cli_file.close()
 
-    dnac_apis.upload_template(remote_del_templ, template_project, cli_config, dnac_token)
+    dnac_apis.upload_template(remote_rem_templ, template_project, cli_config, dnac_token)
+    depl_id_remote_rem = dnac_apis.deploy_template(remote_rem_templ, template_project, remote_device_hostname, dnac_token)
 
     print('\nRemote Router restored to the baseline configuration')
     log_remove_info += '\nRemote Device restored to the baseline configuration'
@@ -416,8 +418,8 @@ def main():
     # update the database with script execution
 
     access_log_file = open('access_logs.csv', 'a')
-    data_to_append = [date_time, last_person_email, IPD_IP, approver_email, dc_temp_valid, remote_templ_valid,
-                      templ_deploy_status, dc_router_tunnel, remote_router_tunnel, path_trace_info]
+    data_to_append = [date_time, last_person_email, IPD_IP, approver_email, log_dc_info, log_remote_info,
+                      log_templ_depl_info, log_tunnel_info, log_path_trace]
     access_log_file.write(data_to_append)
     access_log_file.close()
 
