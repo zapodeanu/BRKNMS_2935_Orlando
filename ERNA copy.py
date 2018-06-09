@@ -23,7 +23,7 @@ import utils
 import spark_apis
 import dnac_apis
 import asav_apis
-import config
+import init
 import netconf_restconf
 
 from PIL import Image, ImageDraw, ImageFont  # for image processing
@@ -31,11 +31,11 @@ from urllib3.exceptions import InsecureRequestWarning  # for insecure https warn
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 
 
-from config import SPARK_AUTH, SPARK_URL, TROPO_KEY
-from config import GOOGLE_API_KEY
-from config import DNAC_URL, DNAC_USER, DNAC_PASS
-from config import ASAv_URL, ASAv_USER, ASAv_PASSW
-from config import UCSD_URL, UCSD_KEY
+from init import SPARK_AUTH, SPARK_URL, TROPO_KEY
+from init import GOOGLE_API_KEY
+from init import DNAC_URL, DNAC_USER, DNAC_PASS
+from init import ASAv_URL, ASAv_USER, ASAv_PASSW
+from init import UCSD_URL, UCSD_KEY
 
 DNAC_AUTH = HTTPBasicAuth(DNAC_USER, DNAC_PASS)
 ASAv_AUTH = HTTPBasicAuth(ASAv_USER, ASAv_PASSW)
@@ -46,7 +46,7 @@ urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warni
 
 # Spark related
 ROOM_NAME = 'ERNA'
-from config import APPROVER_EMAIL
+from init import APPROVER_EMAIL
 
 # UCSD related
 UCSD_CONNECT_FLOW = 'Gabi_VM_Connect_VLAN_10'
@@ -76,8 +76,7 @@ def main():
     # the user will be asked if interested to run in demo mode or in
     # production (logging to files - erna_log.log, erna_err.log))
 
-    # user_input = utils.get_input_timeout('If running in Demo Mode please enter y ', 10)
-    user_input = 'y'
+    user_input = utils.get_input_timeout('If running in Demo Mode please enter y ', 10)
 
     if user_input != 'y':
 
@@ -100,7 +99,7 @@ def main():
     print('\nThe app started running at this time ' + date_time)
 
     user_input = 'y'
-    # user_input = utils.get_input_timeout('Enter y to skip next section : ', 10)
+    user_input = utils.get_input_timeout('Enter y to skip next section : ', 10)
 
     if user_input != 'y':
         # verify if Spark Space exists, if not create Spark Space, and add membership (optional)
@@ -148,6 +147,8 @@ def main():
         print('\nThe user with this email: ', last_person_email, ' asked access to IPD for ', (timer/60), ' minutes')
 
 
+
+
     # get the WJT Auth token to access DNA
     dnac_token = dnac_apis.get_dnac_jwt_token(DNAC_AUTH)
     print('\nThe DNA Center auth token is: ', dnac_token)
@@ -167,10 +168,10 @@ def main():
     location_list_info = device_location.split('/')
     remote_device_location = location_list_info[-1]  # select the building name
 
-    log_ipd_info = 'The IPD is connected to this device: ' + remote_device_hostname
-    log_ipd_info += '\nThis interface: ' + interface_name + ', access VLAN: ' + vlan_number
-    log_ipd_info += '\nLocated       : ' + remote_device_location
-    print(log_ipd_info)
+    print('\nThe IPD is connected to:')
+    print('this interface:', interface_name, ', access VLAN:', vlan_number)
+    print('on this device:', remote_device_hostname)
+    print('located:       ', remote_device_location)
 
     # request approval
 
@@ -204,36 +205,62 @@ def main():
     # execute UCSD workflow to connect VDI to VLAN, power on VDI
     # execute_ucsd_workflow(ucsd_key, UCSD_CONNECT_FLOW)
 
-    log_ucsd_info = '\nUCSD connect flow executed'
-    print(log_ucsd_info)
+    print('UCSD connect flow executed')
 
-    # deployment of cli configuration files to the dc router
-
+    # deployment of interface configuration files to the DC router
     dc_device_hostname = 'PDX-RO'
     template_project = 'ERNA'
     print('\nThe DC device name is: ', dc_device_hostname)
 
-    dc_config_file = 'DC_Config.txt'
-    dc_config_templ = dc_config_file.split('.')[0]  # select the template name from the template file
+    dc_int_config_file = 'DC_Interface_Config.txt'
+    dc_int_templ = dc_int_config_file.split('.')[0]  # select the template name from the template file
 
-    cli_file = open(dc_config_file, 'r')  # open file with the template
+    cli_file = open(dc_int_config_file, 'r')  # open file with the template
     cli_config = cli_file.read()  # read the file
 
     # validation of dc router cli template
-    dc_valid = dnac_apis.check_ipv4_duplicate(dc_config_file)
-    if dc_valid is True:
+    valid = dnac_apis.check_ipv4_duplicate(dc_int_config_file)
+    if not valid:
         print('\nDC Router CLI Templates validated')
+        dc_temp_valid = True
 
-    dnac_apis.upload_template(dc_config_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
-    depl_id_dc = dnac_apis.deploy_template(dc_config_templ, template_project, dc_device_hostname, dnac_token)  # deploy dc template
+    dnac_apis.upload_template(dc_int_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
+    depl_id_dc_int = dnac_apis.deploy_template(dc_int_templ, template_project, dc_device_hostname, dnac_token)  # deploy
     time.sleep(1)
 
-    # deployment of cli configuration files to the remote router
+    # deployment of routing configuration files to the DC router
+    dc_rout_config_file = 'DC_Routing_Config.txt'
+    dc_rout_templ = dc_rout_config_file.split('.')[0]  # select the template name from the template file
 
-    remote_config_file = 'Remote_Config.txt'
-    remote_config_templ = remote_config_file.split('.')[0]  # select the template name from the template file
+    cli_file = open(dc_rout_config_file, 'r')  # open file with the template
+    cli_config = cli_file.read()  # read the file
 
-    cli_file = open(remote_config_file, 'r')  # open file with the template
+    dnac_apis.upload_template(dc_rout_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
+    depl_id_dc_routing = dnac_apis.deploy_template(dc_rout_templ, template_project, dc_device_hostname, dnac_token)
+
+
+    print('\nDeployment of the configurations to the DC Router, ', dc_device_hostname, 'started')
+
+    time.sleep(1)
+
+    # deployment of interface configuration files to the Remote router
+
+    remote_int_config_file = 'Remote_Interface_Config.txt'
+    remote_int_templ = remote_int_config_file.split('.')[0]  # select the template name from the template file
+
+    cli_file = open(remote_int_config_file, 'r')  # open file with the template
+    cli_config = cli_file.read()  # read the file
+
+    dnac_apis.upload_template(remote_int_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
+    depl_id_remote_int = dnac_apis.deploy_template(remote_int_templ, template_project, remote_device_hostname, dnac_token)   # deploy
+    time.sleep(1)
+
+    # deployment of routing configuration files to the Remote router
+
+    remote_rout_config_file = 'Remote_Routing_Config.txt'
+    remote_rout_templ = remote_rout_config_file.split('.')[0]  # select the template name from the template file
+
+    cli_file = open(remote_rout_config_file, 'r')  # open file with the template
     cli_config = cli_file.read()  # read the file
 
     # update the template with the localized info for the IPD
@@ -243,19 +270,14 @@ def main():
     cli_config = cli_config.replace('$IPD', IPD_IP)
     cli_config = cli_config.replace('$VlanId', vlan_number)
 
-    remote_updated_config_file = 'Remote_Updated.txt'
-    updated_cli_file = open(remote_updated_config_file, 'w')
-    updated_cli_file.write(cli_config)
-    updated_cli_file.close()
-
     # validation of remote router cli template
-    remote_valid = dnac_apis.check_ipv4_duplicate(remote_updated_config_file)
-    if remote_valid is True:
+    valid = dnac_apis.check_ipv4_duplicate(remote_rout_config_file)
+    if not valid:
         print('\nRemote Device CLI Templates validated')
+        remote_templ_valid = True
 
-    dnac_apis.upload_template(remote_config_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
-    depl_id_remote = dnac_apis.deploy_template(remote_config_templ, template_project, remote_device_hostname, dnac_token)   # deploy remote template
-    time.sleep(1)
+    dnac_apis.upload_template(remote_rout_templ, template_project, cli_config, dnac_token)  # upload the template to DNA C
+    depl_id_remote_routing = dnac_apis.deploy_template(remote_rout_templ, template_project, remote_device_hostname, dnac_token)   # deploy
 
     print('\nDeployment of the configurations to the Remote device, ', remote_device_hostname, ' started')
 
@@ -265,13 +287,13 @@ def main():
     print('\nWait for DNA Center to complete template deployments')
     time.sleep(10)
 
-    dc_status = dnac_apis.check_template_deployment_status(depl_id_dc, dnac_token)
-    remote_status = dnac_apis.check_template_deployment_status(depl_id_remote, dnac_token)
+    dc_interface_status = dnac_apis.check_template_deployment_status(depl_id_dc_int, dnac_token)
+    dc_routing_status = dnac_apis.check_template_deployment_status(depl_id_dc_routing, dnac_token)
+    remote_interface_status = dnac_apis.check_template_deployment_status(depl_id_remote_int, dnac_token)
+    remote_routing_status = dnac_apis.check_template_deployment_status(depl_id_remote_routing, dnac_token)
 
-    log_templ_depl_info = 'Templates deployment status: ' + dc_status + ', ' + remote_status
-    print(log_templ_depl_info)
-
-    if dc_status == 'SUCCESS' and remote_status == 'SUCCESS':
+    print('Templates deployment status: ', dc_interface_status, dc_routing_status, remote_interface_status, remote_routing_status)
+    if dc_interface_status == 'SUCCESS' and dc_routing_status ==  'SUCCESS' and remote_interface_status == 'SUCCESS' and remote_routing_status == 'SUCCESS':
         print('\nAll templates deployment have been successful\n')
         templ_deploy_status = True
 
@@ -287,7 +309,6 @@ def main():
     dc_router_tunnel = netconf_restconf.get_restconf_int_oper_status('Tunnel201')
     remote_router_tunnel = netconf_restconf.get_netconf_int_oper_status('Tunnel201')
 
-    print('i am here')
     print('\nThe Tunnel 201 interfaces operational state:')
     print('From ', remote_device_hostname, ' using NETCONF -', dc_router_tunnel)
     print('From ', dc_device_hostname, ' using RESTCONF -', remote_router_tunnel)

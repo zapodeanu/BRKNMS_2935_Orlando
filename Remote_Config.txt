@@ -1,0 +1,25 @@
+!
+interface Loopback200
+ ip address 172.16.200.2 255.255.255.255
+!
+interface Tunnel201
+ ip address 172.16.201.2 255.255.255.0
+ tunnel source Loopback200
+ tunnel destination 172.16.200.1
+!
+!
+router eigrp 123
+  network 172.16.200.2 0.0.0.0
+!
+router eigrp 201
+ network 172.16.201.2 0.0.0.0
+ redistribute static route-map REMOTE_ACCESS
+ exit
+!
+ip route $RemoteClient 255.255.255.255 Vlan$VlanId
+!
+ip prefix-list REMOTE_ACCESS_PLIST seq 5 permit $IPD/32
+!
+route-map REMOTE_ACCESS permit 10
+ match ip address prefix-list REMOTE_ACCESS_PLIST
+

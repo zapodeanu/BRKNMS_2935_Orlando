@@ -3,14 +3,13 @@
 
 # developed by Gabi Zapodeanu, TSA, GPO, Cisco Systems
 
-import requests
 import urllib3
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 
 import dnac_apis
 import utils
-from init import DNAC_PASS, DNAC_USER
+from config import DNAC_PASS, DNAC_USER
 
 urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warnings
 

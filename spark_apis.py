@@ -14,8 +14,8 @@ import urllib3
 from requests_toolbelt import MultipartEncoder  # required to encode messages uploaded to Spark
 from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 
-from init import SPARK_AUTH, SPARK_URL
-from init import TROPO_KEY
+from config import SPARK_AUTH, SPARK_URL
+from config import TROPO_KEY
 
 urllib3.disable_warnings(InsecureRequestWarning)  # Disable insecure https warnings
 

@@ -68,7 +68,6 @@ def get_restconf_int_oper_status(interface):
     response = requests.get(url, headers=header, verify=False, auth=ROUTER_AUTH)
     interface_info = response.json()
     oper_data = interface_info['ietf-interfaces:interface']
-    utils.pprint(oper_data)
     oper_status = oper_data['oper-status']
     return oper_status
 

@@ -17,8 +17,8 @@ import utils
 from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 
-from init import GOOGLE_API_KEY
-from init import DNAC_URL, DNAC_PASS, DNAC_USER
+from config import GOOGLE_API_KEY
+from config import DNAC_URL, DNAC_PASS, DNAC_USER
 
 urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warnings
 

@@ -11,7 +11,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 
-from init import ASAv_URL, ASAv_USER, ASAv_PASSW
+from config import ASAv_URL, ASAv_USER, ASAv_PASSW
 ASAv_AUTH = HTTPBasicAuth(ASAv_USER, ASAv_PASSW)
 
 urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warnings
