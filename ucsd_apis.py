@@ -5,12 +5,8 @@
 
 
 import requests
-import json
-
-from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
-from requests.auth import HTTPBasicAuth  # for Basic Auth
-
 from init import UCSD_URL, UCSD_PASSW, UCSD_USER
+from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 
 urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warnings
 
@@ -34,7 +30,7 @@ def execute_ucsd_workflow(ucsd_api_key, workflow_name):
     """
     Execute an UCSD workflow
     Call to UCSD, /app/api/rest?formatType=json&opName=userAPISubmitWorkflowServiceRequest&opData=
-    :param ucsd_key: UCSD user API key
+    :param ucsd_api_key: UCSD user API key
     :param workflow_name: workflow name, parameters if needed
     :return:
     """

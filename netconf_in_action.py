@@ -47,6 +47,7 @@ def get_netconf_int_oper_status(interface):
         xml_doc = xml.dom.minidom.parseString(result.xml)
         return xml_doc
 
+# get the Interface GigabitEthernet1 operational data
 
 xml_info = get_netconf_int_oper_status('GigabitEthernet1')
 print(xml_info.toprettyxml())

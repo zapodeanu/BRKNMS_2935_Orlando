@@ -13,3 +13,4 @@ no ip route $IPD 255.255.255.255 Vlan$VlanId
 no ip prefix-list REMOTE_ACCESS_PLIST seq 5 permit $IPD/32
 !
 no route-map REMOTE_ACCESS permit 10
+!

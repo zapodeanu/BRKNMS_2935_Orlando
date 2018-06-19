@@ -4,21 +4,16 @@
 # developed by Gabi Zapodeanu, TSA, GPO, Cisco Systems
 
 
-import requests
 import json
-import time
-import os
-import os.path
+
+import requests
 import urllib3
-import socket
-import re
-import utils
-
-from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 from requests.auth import HTTPBasicAuth  # for Basic Auth
+from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings
 
-from config import GOOGLE_API_KEY
+import utils
 from config import DNAC_URL, DNAC_PASS, DNAC_USER
+from config import GOOGLE_API_KEY
 
 urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warnings
 
@@ -423,7 +418,7 @@ def get_device_id_name(device_name, dnac_jwt_token):
 
 def get_device_status(device_name, dnac_jwt_token):
     """
-    This function will return the reachability status for the network device with the name {device_name}
+    This function will return the status for the network device with the name {device_name}
     :param device_name: device name
     :param dnac_jwt_token: DNA C token
     :return: status - {UNKNOWN} to locate a device in the database,
@@ -841,7 +836,7 @@ def check_ipv4_network_interface(ip_address, dnac_jwt_token):
     except:
         device_info = get_device_info_ip(ip_address, dnac_jwt_token)  # required for AP's
         device_hostname = device_info['hostname']
-        return (device_hostname,)
+        return device_hostname
 
 
 def get_device_info_ip(ip_address, dnac_jwt_token):
@@ -871,12 +866,12 @@ def check_ipv4_address(ipv4_address, dnac_jwt_token):
     """
     # check against network devices interfaces
     try:
-        device_info = check_ipv4_network_interface(ipv4_address, dnac_token)
+        device_info = check_ipv4_network_interface(ipv4_address, dnac_jwt_token)
         return True
     except:
         # check against any hosts
         try:
-            client_info = get_client_info(ipv4_address, dnac_token)
+            client_info = get_client_info(ipv4_address, dnac_jwt_token)
             if client_info is not None:
                 return True
         except:

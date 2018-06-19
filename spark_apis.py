@@ -127,7 +127,7 @@ def add_room_membership(room_name, email_invite):
     :param email_invite: Spark user email to add to the team
     :return: status for adding the user, by returning the email address
     """
-    get_room_id(room_name)
+    room_id = get_room_id(room_name)
     payload = {'roomId': room_id, 'personEmail': email_invite, 'isModerator': 'true'}
     url = SPARK_URL + '/team/memberships'
     header = {'content-type': 'application/json', 'authorization': SPARK_AUTH}

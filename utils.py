@@ -6,20 +6,17 @@
 
 # the utils module includes common utilized utility functions
 
-import requests
 import json
-import sys
-import select
-import time
 import os
 import os.path
-import urllib3
-import socket  # needed for IPv4 validation
 import re  # needed for regular expressions matching
+import select
+import socket  # needed for IPv4 validation
+import sys
 
+import urllib3
 from PIL import Image, ImageDraw, ImageFont  # needed for the image processing
 from urllib3.exceptions import InsecureRequestWarning
-from requests.auth import HTTPBasicAuth  # for Basic Auth
 
 urllib3.disable_warnings(InsecureRequestWarning)  # Disable insecure https warnings
 
@@ -122,7 +119,7 @@ def identify_ipv4_address(configuration):
     :param configuration: string with the configuration
     :return: list of IPv4 addresses
     """
-    ipv4_list =[]
+    ipv4_list = []
     pattern = re.compile('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
     split_lines = configuration.split('\n')  # split configuration file in individual commands'
     for line in split_lines:
@@ -134,7 +131,7 @@ def identify_ipv4_address(configuration):
                 pass
             line_begins = split_config[0:3]  # select the three items in the list
             for word in line_begins:
-                check_ip = pattern.match(word)  # match each word with the patern from regex
+                check_ip = pattern.match(word)  # match each word with the pattern from regex
                 if check_ip:
                     if validate_ipv4_address(word):  # validate if the octets are valid IP addresses
                         ipv4_list.append(word)

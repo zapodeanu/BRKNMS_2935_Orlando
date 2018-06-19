@@ -69,17 +69,13 @@ def main():
     Access will be provisioned to allow connectivity from DMZ VDI to IPD
     """
 
-    last_person_email = 'gzapodea@cisco.com'
-    timer = 3600
-
     # save the initial stdout
     initial_sys = sys.stdout
 
     # the user will be asked if interested to run in demo mode or in
     # production (logging to files - erna_log.log, erna_err.log))
 
-    # user_input = utils.get_input_timeout('If running in Demo Mode please enter y ', 10)
-    user_input = 'y'
+    user_input = utils.get_input_timeout('If running in Demo Mode please enter y ', 10)
 
     if user_input != 'y':
 
@@ -101,8 +97,7 @@ def main():
     date_time = str(datetime.datetime.now().replace(microsecond=0))
     print('\nThe app started running at this time ' + date_time)
 
-    user_input = 'y'
-    # user_input = utils.get_input_timeout('Enter y to skip next section : ', 10)
+    user_input = utils.get_input_timeout('Enter y to skip next section : ', 10)
 
     if user_input != 'y':
         # verify if Spark Space exists, if not create Spark Space, and add membership (optional)
@@ -199,12 +194,11 @@ def main():
 
         print('\nApproval process completed')
 
-    approver_email = 'gabriel.zapodeanu@gmail.com'
     # get UCSD API key
-    # ucsd_key = get_ucsd_api_key()
+    ucsd_key = get_ucsd_api_key()
 
     # execute UCSD workflow to connect VDI to VLAN, power on VDI
-    # execute_ucsd_workflow(ucsd_key, UCSD_CONNECT_FLOW)
+    execute_ucsd_workflow(ucsd_key, UCSD_CONNECT_FLOW)
 
     log_ucsd_info = '\nUCSD connect flow executed'
     print(log_ucsd_info)
@@ -364,9 +358,7 @@ def main():
     service_now_apis.update_incident(snow_incident, log_asav_info, snow_user)
     service_now_apis.update_incident(snow_incident, log_access_info, snow_user)
 
-
-    # time.sleep(timer)
-    input('\nInput any key to continue ! ')
+    time.sleep(timer)
 
     #
     #  restore configurations to initial state
@@ -427,7 +419,7 @@ def main():
     print(log_asav_remove_info)
 
     # execute UCSD workflow to disconnect VDI to VLAN, power on VDI
-    # execute_ucsd_workflow(ucsd_key, UCSD_DISCONNECT_FLOW)
+    execute_ucsd_workflow(ucsd_key, UCSD_DISCONNECT_FLOW)
 
     log_ucsd_remove_info = '\nUCSD disconnect flow executed'
     print(log_ucsd_remove_info)

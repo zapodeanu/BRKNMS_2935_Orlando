@@ -19,7 +19,7 @@ urllib3.disable_warnings(InsecureRequestWarning)  # disable insecure https warni
 
 def get_asav_access_list(interface_name):
     """
-    Find out the existing ASAv interface Access Control List
+    Find out the existing ASAv interface with the name {interface_name} Access Control List
     Call to ASAv - /api/access/in/{interfaceId}/rules
     :param interface_name: ASA interface_name
     :return: Access Control List id number

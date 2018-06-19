@@ -10,14 +10,12 @@
 # import Python packages
 
 
-import requests
-import urllib3
 import json
 
-
+import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-from config import SNOW_ADMIN, SNOW_DEV, SNOW_PASS, SNOW_URL
+from config import SNOW_ADMIN, SNOW_PASS, SNOW_URL
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # Disable insecure https warnings
 

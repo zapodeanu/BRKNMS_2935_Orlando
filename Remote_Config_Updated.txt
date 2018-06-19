@@ -8,7 +8,6 @@ interface Tunnel201
  tunnel destination 10.93.140.48
  keepalive
 !
-!
 router eigrp 123
   network 10.93.140.49 0.0.0.0
 !

@@ -3,6 +3,7 @@
 
 # developed by Gabi Zapodeanu, TSA, GPO, Cisco Systems
 
+
 import urllib3
 from requests.auth import HTTPBasicAuth  # for Basic Auth
 from urllib3.exceptions import InsecureRequestWarning  # for insecure https warnings

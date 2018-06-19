@@ -61,10 +61,12 @@ def get_client_info(client_ip, dnac_jwt_token):
 
 
 # get the DNA Center JWT auth
+
 dnac_jwt_auth = get_dnac_jwt_token(DNAC_AUTH)
 print('The DNA Center Auth JWT is: ', dnac_jwt_auth)
 
 # get the client info
+
 client_ip_add = '10.93.140.35'
 client_detail = get_client_info(client_ip_add, dnac_jwt_auth)
 print('The information for the client with the IP address: ', client_ip_add)

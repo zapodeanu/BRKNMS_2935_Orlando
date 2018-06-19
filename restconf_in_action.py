@@ -38,5 +38,7 @@ def get_restconf_int_oper_status(interface):
     return oper_data
 
 
+# get interface operation data using RESTCONF
+
 json_info = get_restconf_int_oper_status('GigabitEthernet1')
 pprint(json_info)

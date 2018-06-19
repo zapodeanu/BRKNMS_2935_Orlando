@@ -30,7 +30,7 @@ def get_netconf_int_oper_status(interface):
     """
     This function will retrieve the IPv4 address configured on the interface via NETCONF
     :param interface: interface name
-    :return: int_ip_add: the interface IPv4 address
+    :return: oper_status: the interface operational status
     """
 
     with manager.connect(host=SW_HOST, port=PORT, username=USER,
@@ -62,6 +62,11 @@ def get_netconf_int_oper_status(interface):
 
 
 def get_restconf_int_oper_status(interface):
+    """
+    This function will retrieve the IPv4 address configured on the interface via NETCONF
+    :param interface: interface name
+    :return: oper_status: the interface IPv4 operational status
+    """
 
     url = 'https://' + RO_HOST + '/restconf/data/interfaces-state/interface=' + interface
     header = {'Content-type': 'application/yang-data+json', 'accept': 'application/yang-data+json'}
